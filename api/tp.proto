@@ -1,0 +1,18 @@
+syntax="proto3";
+
+package tpgrpc;
+
+service tp {
+    rpc Hello(TPRequest) returns (TPResponse){}
+    rpc Time(TPRequest) returns (TPResponse){}
+    rpc Greetings(TPRequest) returns (stream TPResponse){}
+}
+
+message TPRequest{
+
+}
+
+
+message TPResponse{
+    string text=1;
+}
