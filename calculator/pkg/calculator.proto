@@ -1,0 +1,36 @@
+syntax="proto3";
+
+package calculator;
+
+message SumRequest{
+    string first = 1;
+    string second = 2;
+}
+
+message SumResponse{
+    string result = 3;
+}
+
+message AvgRequest{
+    string number = 1;
+}
+
+message AvgResponse{
+    string result = 1;
+}
+
+message DecomposeRequest{
+    string prime =1;
+}
+
+message DecomposeResponse{
+    string result =1;
+}
+
+service CalculatorService{
+    rpc Sum(SumRequest) returns (SumResponse){};
+
+    rpc Decompose(DecomposeRequest) returns (stream DecomposeResponse){};
+
+    rpc Average(stream AvgRequest) returns (AvgResponse){};
+}
