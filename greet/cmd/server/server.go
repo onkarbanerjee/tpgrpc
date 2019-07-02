@@ -9,6 +9,7 @@ import (
 	"time"
 
 	greetpb "github.com/onkarbanerjee/tpgrpc/greet"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -52,6 +53,25 @@ func (s *server) GreetManyPeopleOnce(stream greetpb.GreetService_GreetManyPeople
 		firstName, lastName := req.GetGreeting().GetFirstName(), req.GetGreeting().GetLastName()
 		result += "Hello " + firstName + " " + lastName
 	}
+}
+
+func (s *server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) error {
+	log.Println("Got a bidirectional streaming request")
+
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return errors.Wrap(err, "Could not receive from stream, got error")
+		}
+		firstName, lastName := req.GetGreeting().GetFirstName(), req.GetGreeting().GetLastName()
+		stream.Send(&greetpb.GreetingResponse{
+			Result: "Hello " + firstName + " " + lastName,
+		})
+	}
+	return nil
 }
 
 func main() {
