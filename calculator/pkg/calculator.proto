@@ -27,10 +27,20 @@ message DecomposeResponse{
     string result =1;
 }
 
+message MaxRequest{
+    string number = 1;
+}
+
+message MaxResponse{
+    string result = 1;
+}
+
 service CalculatorService{
     rpc Sum(SumRequest) returns (SumResponse){};
 
     rpc Decompose(DecomposeRequest) returns (stream DecomposeResponse){};
 
     rpc Average(stream AvgRequest) returns (AvgResponse){};
+
+    rpc Maximum(stream MaxRequest) returns (stream MaxResponse){};
 }

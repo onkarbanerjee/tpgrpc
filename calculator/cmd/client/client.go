@@ -77,4 +77,53 @@ func main() {
 		return
 	}
 	log.Println("Got avg response from server", avgResp.Result)
+
+	maxStream, err := client.Maximum(context.Background())
+	if err != nil {
+		log.Println("Could not get a client stream to send requests to", err)
+		return
+	}
+	maxRequests := []calculator.MaxRequest{
+		calculator.MaxRequest{Number: "1"},
+		calculator.MaxRequest{Number: "5"},
+		calculator.MaxRequest{Number: "3"},
+		calculator.MaxRequest{Number: "6"},
+		calculator.MaxRequest{Number: "2"},
+		calculator.MaxRequest{Number: "20"},
+	}
+
+	done := make(chan struct{})
+	go func() {
+		for _, req := range maxRequests {
+			if err = maxStream.Send(&req); err != nil {
+				log.Println("Could not send request to max stream", err)
+				return
+			}
+			<-time.After(time.Second)
+		}
+		maxStream.CloseSend()
+		log.Println("Finished sending all max requests")
+	}()
+
+	go func() {
+		defer func() {
+			done <- struct{}{}
+		}()
+
+		for {
+			resp, err := maxStream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Println("Could not get response from max stream", err)
+				return
+			}
+			log.Println("Got response ", resp.GetResult())
+		}
+	}()
+
+	<-done
+
+	log.Println("Bye")
 }

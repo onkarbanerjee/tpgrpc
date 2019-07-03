@@ -76,6 +76,31 @@ func (s *server) Average(stream calculator.CalculatorService_AverageServer) erro
 	}
 }
 
+func (s *server) Maximum(stream calculator.CalculatorService_MaximumServer) error {
+	max := -1
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+
+			return fmt.Errorf("COuld not receive from stream in server %s", err)
+		}
+		number, err := strconv.Atoi(req.GetNumber())
+		if err != nil {
+			return fmt.Errorf("Invalid number in stream %s", err)
+		}
+		if number > max {
+			max = number
+			stream.Send(&calculator.MaxResponse{
+				Result: strconv.Itoa(max),
+			})
+		}
+	}
+	return nil
+}
+
 func main() {
 
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
