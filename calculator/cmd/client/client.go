@@ -23,41 +23,13 @@ func main() {
 
 	client := calculator.NewCalculatorServiceClient(conn)
 
-	if err = doSum(client); err != nil {
-		if _, ok := status.FromError(err); ok {
-			log.Println("Got a grpc error", err)
-		} else {
-			log.Println("Got a big error", err)
-		}
-		return
-	}
+	checkErr(doSum(client))
 
-	if err = doDecompose(client); err != nil {
-		if _, ok := status.FromError(err); ok {
-			log.Println("Got a grpc error", err)
-		} else {
-			log.Println("Got a big error", err)
-		}
-		return
-	}
+	checkErr(doDecompose(client))
 
-	if err = doAverage(client); err != nil {
-		if _, ok := status.FromError(err); ok {
-			log.Println("Got a grpc error", err)
-		} else {
-			log.Println("Got a big error", err)
-		}
-		return
-	}
+	checkErr(doAverage(client))
 
-	if err = doMax(client); err != nil {
-		if _, ok := status.FromError(err); ok {
-			log.Println("Got a grpc error", err)
-		} else {
-			log.Println("Got a big error", err)
-		}
-		return
-	}
+	checkErr(doMax(client))
 
 	log.Println("Bye")
 }
@@ -172,4 +144,15 @@ func doMax(client calculator.CalculatorServiceClient) error {
 
 	<-done
 	return status.Error(codes.OK, "Success!")
+}
+
+func checkErr(err error) {
+	if err != nil {
+		if _, ok := status.FromError(err); ok {
+			log.Println("Got a grpc error", err)
+		} else {
+			log.Println("Got a big error", err)
+		}
+		return
+	}
 }
