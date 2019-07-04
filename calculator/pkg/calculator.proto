@@ -3,36 +3,36 @@ syntax="proto3";
 package calculator;
 
 message SumRequest{
-    string first = 1;
-    string second = 2;
+    int32 first = 1;
+    int32 second = 2;
 }
 
 message SumResponse{
-    string result = 3;
+    int32 result = 3;
 }
 
 message AvgRequest{
-    string number = 1;
+    int32 number = 1;
 }
 
 message AvgResponse{
-    string result = 1;
+    double result = 1;
 }
 
 message DecomposeRequest{
-    string prime =1;
+    int32 prime =1;
 }
 
 message DecomposeResponse{
-    string result =1;
+    int32 result =1;
 }
 
 message MaxRequest{
-    string number = 1;
+    int32 number = 1;
 }
 
 message MaxResponse{
-    string result = 1;
+    int32 result = 1;
 }
 
 service CalculatorService{
