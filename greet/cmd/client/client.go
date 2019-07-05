@@ -6,6 +6,9 @@ import (
 	"log"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	greetpb "github.com/onkarbanerjee/tpgrpc/greet"
 
 	"google.golang.org/grpc"
@@ -31,6 +34,10 @@ func main() {
 
 	// perform bidirectional streaming
 	doBidirectionalStreaming(client)
+
+	// perform unary with deadline
+	doGreetWithDeadline(client, 5*time.Second)
+	doGreetWithDeadline(client, time.Second)
 
 }
 
@@ -185,4 +192,27 @@ func doBidirectionalStreaming(client greetpb.GreetServiceClient) {
 	}()
 
 	<-done
+}
+
+func doGreetWithDeadline(client greetpb.GreetServiceClient, duration time.Duration) {
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+
+	req := greetpb.GreetingRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: "Onkar",
+			LastName:  "Banerjee",
+		},
+	}
+	resp, err := client.GreetWithDeadline(ctx, &req)
+	if err != nil {
+		if statusErr, ok := status.FromError(err); ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				log.Println("Response was cancelled")
+				return
+			}
+			log.Println("Response was cancelled for other some reason", statusErr)
+		}
+	}
+	log.Println("Received response", resp.GetResult())
 }

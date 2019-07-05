@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	greetpb "github.com/onkarbanerjee/tpgrpc/greet"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -72,6 +75,24 @@ func (s *server) GreetEveryone(stream greetpb.GreetService_GreetEveryoneServer) 
 		})
 	}
 	return nil
+}
+
+func (s *server) GreetWithDeadline(ctx context.Context, req *greetpb.GreetingRequest) (*greetpb.GreetingResponse, error) {
+	log.Println("Recieved a request with Deadline")
+	for i := 0; i < 3; i++ {
+		<-time.After(time.Second)
+		if err := ctx.Err(); err != nil {
+			if err == context.DeadlineExceeded {
+				log.Println("Received cancelled, hence returning")
+				return nil, status.Error(codes.Canceled, "Cancelled")
+			}
+			log.Println("Received error, hence returning", err)
+			return nil, status.Errorf(codes.Internal, "Internal error %s", err)
+		}
+	}
+	return &greetpb.GreetingResponse{
+		Result: "Hello " + req.GetGreeting().GetFirstName() + req.GetGreeting().GetLastName(),
+	}, nil
 }
 
 func main() {

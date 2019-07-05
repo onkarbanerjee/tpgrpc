@@ -30,4 +30,6 @@ service GreetService{
     // BiDirectional streaming
     rpc GreetEveryone(stream GreetingRequest) returns (stream GreetingResponse){};
     
+    // Unary with Deadline
+    rpc GreetWithDeadline(GreetingRequest) returns (GreetingResponse){};
 }
