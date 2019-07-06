@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"google.golang.org/grpc/credentials"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -15,7 +17,14 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+
+	creds, err := credentials.NewClientTLSFromFile("certs/ca.crt", "")
+	if err != nil {
+		log.Println("Could not get credentials,got", err)
+		return
+	}
+
+	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(creds))
 	if err != nil {
 		log.Println("COuld not get a client connection", err)
 	}

@@ -5,7 +5,14 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
+
+	"google.golang.org/grpc/reflection"
+
+	"google.golang.org/grpc/credentials"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -90,13 +97,36 @@ func main() {
 		return
 	}
 
-	s := grpc.NewServer()
+	creds, err := credentials.NewServerTLSFromFile("certs/server.crt", "certs/server.pem")
+	if err != nil {
+		log.Println("COuld not get the credentials", err)
+		return
+	}
+	s := grpc.NewServer(grpc.Creds(creds))
 
 	calculator.RegisterCalculatorServiceServer(s, &server{})
+	reflection.Register(s)
 
-	log.Println("Staring Sum sever")
+	stop, done := make(chan os.Signal), make(chan struct{})
+	signal.Notify(stop, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM, syscall.SIGKILL)
+
+	go func() {
+		defer func() {
+			done <- struct{}{}
+		}()
+
+		<-stop
+		log.Println("Shutting down server in 3 seconds")
+		<-time.After(3 * time.Second)
+		s.GracefulStop()
+	}()
+
+	log.Println("Staring Calculator sever")
 	if err = s.Serve(lis); err != nil {
 		log.Println("Could not start server", err)
 		return
 	}
+
+	<-done
+	log.Println("Done... bye!!!")
 }
