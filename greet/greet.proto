@@ -26,4 +26,10 @@ service GreetService{
 
     // client side streaming(using the same GreetingRequest and GreetingResponse messages)
     rpc GreetManyPeopleOnce(stream GreetingRequest) returns (GreetingResponse){};
+
+    // BiDirectional streaming
+    rpc GreetEveryone(stream GreetingRequest) returns (stream GreetingResponse){};
+    
+    // Unary with Deadline
+    rpc GreetWithDeadline(GreetingRequest) returns (GreetingResponse){};
 }
